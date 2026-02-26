@@ -22,10 +22,18 @@ class SEACEScraper:
             os.makedirs(download_dir)
 
         if platform.system() == "Linux":
-            from pyvirtualdisplay import Display
-            # Iniciar display virtual (Xvfb) para engañar al WAF y evitar el uso de --headless
-            self.display = Display(visible=0, size=(1920, 1080))
-            self.display.start()
+            try:
+                from pyvirtualdisplay import Display
+                # Iniciar display virtual (Xvfb) para engañar al WAF en EC2
+                self.display = Display(visible=0, size=(1920, 1080))
+                self.display.start()
+            except FileNotFoundError:
+                print("❌ ERROR CRÍTICO EN EC2: Falta instalar Xvfb.")
+                print("Ejecuta en tu terminal de AWS: sudo dnf install -y xorg-x11-server-Xvfb")
+                raise
+            except Exception as e:
+                print(f"⚠ Advertencia con display virtual: {e}")
+                self.display = None
         else:
             self.display = None
         
@@ -98,8 +106,11 @@ chrome.webRequest.onAuthRequired.addListener(
             print(f"✓ Proxy (sin auth) configurado: {proxy_url}")
             options.add_argument(f'--proxy-server={proxy_url}')
 
-        # Habilitado headless=new nuevamente a pedido del usuario (la proxy ahora protege)
-        options.add_argument("--headless=new")
+        # En Windows siempre usamos headless=new para que no te moleste la ventana popup.
+        # En Linux (EC2) NO USAMOS headless porque Xvfb ya lo hace invisible y Cloudflare detecta el bot si lo mandamos.
+        if platform.system() == "Windows":
+            options.add_argument("--headless=new")
+            
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
