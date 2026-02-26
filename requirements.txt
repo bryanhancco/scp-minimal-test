@@ -1,0 +1,9 @@
+selenium
+pdfplumber
+pandas
+webdriver-manager
+requests
+openpyxl
+beautifulsoup4
+lxml
+python-docx

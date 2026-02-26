@@ -1,0 +1,14 @@
+src/__pycache__
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# python
+.venv/
+venv/
+env/
+
+documentos_descargados
