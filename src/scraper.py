@@ -92,13 +92,15 @@ chrome.webRequest.onAuthRequired.addListener(
 );
 """ % (proxy_host, proxy_port, proxy_user, proxy_pass)
 
-            pluginfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'proxy_auth_plugin.zip')
+            plugin_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'proxy_auth_plugin')
+            os.makedirs(plugin_dir, exist_ok=True)
             
-            with zipfile.ZipFile(pluginfile, 'w') as zp:
-                zp.writestr("manifest.json", manifest_json)
-                zp.writestr("background.js", background_js)
+            with open(os.path.join(plugin_dir, "manifest.json"), "w") as f:
+                f.write(manifest_json)
+            with open(os.path.join(plugin_dir, "background.js"), "w") as f:
+                f.write(background_js)
             
-            options.add_argument(f'--load-extension={pluginfile}')
+            options.add_argument(f'--load-extension={plugin_dir}')
             
         elif os.environ.get("PROXY_URL"):
             # Para proxies sin usuario y contraseña (vía IP authorization)
@@ -165,6 +167,7 @@ chrome.webRequest.onAuthRequired.addListener(
                 screenshot_path = os.path.join(os.path.abspath("."), "error_ec2_pantalla.png")
                 try:
                     self.driver.save_screenshot(screenshot_path)
+                    print(self.driver.page_source[:1000])
                     print(f"\n❌ ERROR de Timeout: El elemento no se pudo clickear.")
                     print(f"⚠ SE HA GUARDADO UNA CAPTURA DE PANTALLA EN: {screenshot_path}")
                     print("Por favor, revisa ese archivo para ver si el sitio está bloqueando tu IP (Cloudflare/Captcha) o si no ha terminado de cargar.")
