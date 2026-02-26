@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 import time
+import platform
 import os
 from config import URL, TIMEOUT, OBJETO_CONTRATACION, REPO_PATH, PALABRAS_CLAVE, FILTRO_PALABRAS_CLAVE_HABILITADO
 
@@ -14,10 +15,18 @@ class SEACEScraper:
         
         if not os.path.exists(download_dir):
             os.makedirs(download_dir)
+
+        if platform.system() == "Linux":
+            from pyvirtualdisplay import Display
+            # Iniciar display virtual (Xvfb) para engañar al WAF y evitar el uso de --headless
+            self.display = Display(visible=0, size=(1920, 1080))
+            self.display.start()
+        else:
+            self.display = None
         
         options = uc.ChromeOptions()
 
-        options.add_argument("--headless=new")
+        # ELIMINADO --headless=new ya que ahora usamos un display virtual real en Linux
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
@@ -155,3 +164,5 @@ class SEACEScraper:
     
     def cerrar(self):
         self.driver.quit()
+        if hasattr(self, 'display') and self.display:
+            self.display.stop()
