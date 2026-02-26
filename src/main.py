@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Ensure the 'src' directory is in PYTHONPATH so absolute imports work
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from scraper import SEACEScraper
 from extractor import Extractor
 from navegador import Navegador
@@ -11,7 +17,6 @@ from config import (ANIOS, LIMITE_PAGINAS, REPO_PATH,
                     FILTRO_ENTIDAD_NOMBRE, FILTRO_PALABRAS_CLAVE_HABILITADO,
                     FILTRO_NOMENCLATURA_HABILITADO, FILTRO_NOMENCLATURA,
                     PALABRAS_CLAVE, HABILITAR_ESCANEO_PDF)
-import os
 import shutil
 
 def normalizar_nomenclatura(nomenclatura):
