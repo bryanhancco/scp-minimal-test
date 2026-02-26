@@ -9,3 +9,6 @@ lxml
 python-docx
 undetected-chromedriver
 pyvirtualdisplay
+python-dotenv
+distutils
+setuptools

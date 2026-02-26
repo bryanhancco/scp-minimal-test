@@ -6,6 +6,11 @@ from selenium.webdriver.support.ui import Select
 import time
 import platform
 import os
+import zipfile
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from config import URL, TIMEOUT, OBJETO_CONTRATACION, REPO_PATH, PALABRAS_CLAVE, FILTRO_PALABRAS_CLAVE_HABILITADO
 
 class SEACEScraper:
@@ -25,7 +30,76 @@ class SEACEScraper:
             self.display = None
         
         options = uc.ChromeOptions()
+        
+        # Integración dinámica de Proxys con usuario y contraseña
+        proxy_host = os.environ.get("PROXY_HOST")
+        proxy_port = os.environ.get("PROXY_PORT")
+        proxy_user = os.environ.get("PROXY_USER")
+        proxy_pass = os.environ.get("PROXY_PASS")
 
+        if proxy_host and proxy_port:
+            print(f"✓ Proxy Autenticado configurado: {proxy_host}:{proxy_port}")
+            manifest_json = """
+{
+    "version": "1.0.0",
+    "manifest_version": 2,
+    "name": "Chrome Proxy",
+    "permissions": [
+        "proxy", "tabs", "unlimitedStorage", "storage", "<all_urls>", "webRequest", "webRequestBlocking"
+    ],
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "minimum_chrome_version":"22.0.0"
+}
+"""
+            background_js = """
+var config = {
+        mode: "fixed_servers",
+        rules: {
+          singleProxy: {
+            scheme: "http",
+            host: "%s",
+            port: parseInt(%s)
+          },
+          bypassList: ["localhost"]
+        }
+      };
+
+chrome.proxy.settings.set({value: config, scope: "regular"}, function() {});
+
+function callbackFn(details) {
+    return {
+        authCredentials: {
+            username: "%s",
+            password: "%s"
+        }
+    };
+}
+
+chrome.webRequest.onAuthRequired.addListener(
+            callbackFn,
+            {urls: ["<all_urls>"]},
+            ['blocking']
+);
+""" % (proxy_host, proxy_port, proxy_user, proxy_pass)
+
+            pluginfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'proxy_auth_plugin.zip')
+            
+            with zipfile.ZipFile(pluginfile, 'w') as zp:
+                zp.writestr("manifest.json", manifest_json)
+                zp.writestr("background.js", background_js)
+            
+            options.add_argument(f'--load-extension={pluginfile}')
+            
+        elif os.environ.get("PROXY_URL"):
+            # Para proxies sin usuario y contraseña (vía IP authorization)
+            proxy_url = os.environ.get("PROXY_URL")
+            print(f"✓ Proxy (sin auth) configurado: {proxy_url}")
+            options.add_argument(f'--proxy-server={proxy_url}')
+
+        # Habilitado headless=new nuevamente a pedido del usuario (la proxy ahora protege)
+        options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")

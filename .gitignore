@@ -11,4 +11,6 @@ src/__pycache__
 venv/
 env/
 
+.env
+
 documentos_descargados
