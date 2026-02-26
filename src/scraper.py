@@ -145,6 +145,8 @@ chrome.webRequest.onAuthRequired.addListener(
         self.url = URL
         
     def abrir_pagina(self):
+        self.driver.get("https://api.ipify.org")
+        print("IP REAL:", self.driver.page_source)
         print("Abriendo página de SEACE...")
         self.driver.get(self.url)
         time.sleep(8)  # más tiempo en CI para que cargue completamente
