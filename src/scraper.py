@@ -72,11 +72,22 @@ class SEACEScraper:
             ))
             tab.click()
         except:
-            # Intentar por texto si el href cambia
-            tab = self.wait.until(EC.element_to_be_clickable(
-                (By.XPATH, "//a[contains(text(), 'Procedimientos')]")
-            ))
-            tab.click()
+            try:
+                # Intentar por texto si el href cambia
+                tab = self.wait.until(EC.element_to_be_clickable(
+                    (By.XPATH, "//a[contains(text(), 'Procedimientos')]")
+                ))
+                tab.click()
+            except Exception as e:
+                screenshot_path = os.path.join(os.path.abspath("."), "error_ec2_pantalla.png")
+                try:
+                    self.driver.save_screenshot(screenshot_path)
+                    print(f"\n❌ ERROR de Timeout: El elemento no se pudo clickear.")
+                    print(f"⚠ SE HA GUARDADO UNA CAPTURA DE PANTALLA EN: {screenshot_path}")
+                    print("Por favor, revisa ese archivo para ver si el sitio está bloqueando tu IP (Cloudflare/Captcha) o si no ha terminado de cargar.")
+                except:
+                    pass
+                raise e
         time.sleep(4)
         print("✓ Pestaña activa")
     
