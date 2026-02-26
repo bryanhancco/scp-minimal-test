@@ -1,10 +1,8 @@
-from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
 import time
 import os
 from config import URL, TIMEOUT, OBJETO_CONTRATACION, REPO_PATH, PALABRAS_CLAVE, FILTRO_PALABRAS_CLAVE_HABILITADO
@@ -17,7 +15,7 @@ class SEACEScraper:
         if not os.path.exists(download_dir):
             os.makedirs(download_dir)
         
-        options = webdriver.ChromeOptions()
+        options = uc.ChromeOptions()
 
         options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
@@ -31,8 +29,6 @@ class SEACEScraper:
         # User-agent real para evitar bloqueos
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
         options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option("useAutomationExtension", False)
         
         prefs = {
             "download.default_directory": download_dir,
@@ -42,14 +38,11 @@ class SEACEScraper:
             "profile.default_content_setting_values.automatic_downloads": 1,
             "profile.default_content_settings.popups": 0,
             "plugins.always_open_pdf_externally": True,
-            "download.extensions_to_open": "",
             "safebrowsing.disable_download_protection": True
         }
         options.add_experimental_option("prefs", prefs)
 
-        # webdriver-manager instala automáticamente el ChromeDriver correcto
-        service = Service(ChromeDriverManager().install())
-        self.driver = webdriver.Chrome(service=service, options=options)
+        self.driver = uc.Chrome(options=options, use_subprocess=True)
 
         self.driver.execute_cdp_cmd("Page.setDownloadBehavior", {
             "behavior": "allow",
