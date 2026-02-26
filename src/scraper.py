@@ -42,7 +42,8 @@ class SEACEScraper:
         }
         options.add_experimental_option("prefs", prefs)
 
-        self.driver = uc.Chrome(options=options, use_subprocess=True)
+        # Forzamos la versión 145 del driver para que coincida con la versión instalada en EC2
+        self.driver = uc.Chrome(options=options, version_main=145, use_subprocess=True)
 
         self.driver.execute_cdp_cmd("Page.setDownloadBehavior", {
             "behavior": "allow",
