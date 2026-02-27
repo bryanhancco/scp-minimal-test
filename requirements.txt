@@ -12,3 +12,4 @@ pyvirtualdisplay
 python-dotenv
 distutils
 setuptools
+undetected_chromedriver
